@@ -34,8 +34,13 @@
         </div>
 
         <div class="simple_row_line">
-            <div>result:</div>
+            <div>result Value:</div>
             <div id="resultvr"> 0 </div>
+        </div>
+
+        <div class="simple_row_line">
+            <div> Respuesta Valida: </div>
+            <div id="answervr" class="ybmaker"> ??? </div>
         </div>
     </div>
 </body>
@@ -65,6 +70,8 @@
 
             let resultCont= document.getElementById("result")
             resultCont.innerHTML =   prediccion;
+
+
         }else{
             alert("model don't loaded")
         }
@@ -72,36 +79,86 @@
 
 
     var modelvr = null;
+
+    var word_index = null;
     (async () => {
           console.log("Cargando  modelvr...");
           modelvr = await tf.loadLayersModel("assets/models/valid_resp/v1/Valid_response_modelV1.json");
           console.log(" modelvr cargado...");
       })();
+      (async () => {
+
+        fetch('assets/models/valid_resp/v1/word_index.json')
+            .then(response => response.text())
+            .then((data) => {
+                console.log("Cargando  modelvr...");
+                word_index = data;
+                //console.log( "wi",word_index );
+                tokenize(text="buen servicio",word_index)
+            })
+         
+      })();
 
     function valid_resp(){
-        if(modelvr!=null){
-            let sample= document.getElementById("input").value
-            console.log("sample")
-        
-            var tensor = tf.tensor1d([parseInt(sample)]);
+        if(modelvr!=null && word_index!=null ){
+            let sample= document.getElementById("inputvr").value
+            console.log("sample:"+sample)
+            let tokenized_sample= tokenize(sample,word_index)
+            console.log(tokenized_sample)
+            
+            var tensor = tf.tensor1d([parseInt(tokenized_sample)]);
             var prediccion = modelvr.predict(tensor).dataSync();
             //prediccion = Math.round(prediccion, 1);
-            document.getElementById("resultado")
-
-            let resultCont= document.getElementById("result")
-
+            console.log(prediccion)
+            let resultCont= document.getElementById("resultvr")
+            let answerCont= document.getElementById("answervr")
             let respText = "NO"
+            let awsclass="rbmaker";
             if(prediccion>0.5){
                 let respText="SI"
+                awsclass="gbmaker";
             }
 
-            resultCont.innerHTML =   "value: "+prediccion+" Respuesta Valida: ";
-
+            resultCont.innerHTML =   prediccion
+            answerCont.innerHTML =   respText
+            answerCont.setAttribute("class",awsclass)
         }else{
             alert("modelvr don't loaded")
         }
     }
 
+    // tokeniza un un mensaje para  que pueda procesar la data
+    function tokenize(text="buen servicio",tokens=""){
+        //hardcoded for now// it shoudl be load from a file to match the data used form train the model
+        let vocab_size = 10000
+        let max_length = 50
+        //unnesesary... for the moment
+        //let trunc_type='pre'
+        //let padding_type='pre'
+        
+        let oov_tok = "<OOV>"
+        var tokenized = []
+        var words = text.split(" ")
+        console.log("tokens:"+tokens)
+        tokens= JSON.parse(tokens)
+
+        for(i=0;i<max_length;i++){
+            tokenized.push(0)
+        }
+        console.log("aloha2")
+        for(w=0;w<words.length;w++){
+            word=words[w];
+            if(tokens[word]){
+                tokenized.push(tokens[word])
+            }
+            else
+            {
+                tokenized.push(1)
+            }
+        }
+        console.log("alohasdsa")
+        return tokenized
+    }
 
 // extra
 function checkInput(ob) {

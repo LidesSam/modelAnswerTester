@@ -39,6 +39,23 @@ body{
     display:flex;
     flex-direction:row;
 }
-#result{
+#result , #resultvr{
     color: var(--hgligh-text-color);
+}
+
+.rbmaker{
+    color: red;
+    background-color: black;
+    border: 1px red solid;
+}
+
+.gbmaker{
+    color: lime;
+    background-color: black;
+    border: 1px green solid;
+}
+.ybmaker{
+    color: yellow;
+    background-color: black;
+    border: 1px orangered solid;
 }
