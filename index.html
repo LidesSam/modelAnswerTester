@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="myStyle.css">
+</head>
+
+<body>
+    <div class="centerBox">
+        <h3>cel to fah</h3>
+        <h4>ingrese solo numeros</h4>
+        <h4>-40 celcius = -40 fahrenheit (punto de convergencia)</h4>
+        <h4>0 celcius = 32 fahrenheit </h4>
+        
+        
+        
+        <div class="simple_row_line">
+            <label>celcius:</label>
+            <input id="input"  type="text" /><!--onkeyup="checkInput(this)"/> -->
+            <button onclick="test()"> test</button>
+        </div>
+
+        <div class="simple_row_line">
+            <div>result:</div>
+            <div id="result"> 0 </div>
+        </div>
+    </div>
+    <br>
+    <div class="centerBox">
+        <h3>valid response</h3>
+        <div class="simple_row_line">
+            <textarea  name=""  id="inputvr" cols="30" rows="4"></textarea>
+            <button onclick="valid_resp()"> test</button>
+        </div>
+
+        <div class="simple_row_line">
+            <div>result:</div>
+            <div id="resultvr"> 0 </div>
+        </div>
+    </div>
+</body>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+<script>
+    var model = null;
+    (async () => {
+          console.log("Cargando model...");
+          model = await tf.loadLayersModel("assets/models/celtofah/v1/CelToFah_model.json");
+          console.log("model cargado...");
+      })();
+
+    function test(){
+        if(model!=null){
+            let sample= document.getElementById("input")
+            console.log("sample:"+sample.innerText)
+     
+            var tensor = tf.tensor1d([parseInt(sample.value)]);
+            var prediccion = model.predict(tensor).dataSync();
+            prediccion = Math.round(prediccion, 1);
+
+
+            let resultCont= document.getElementById("result")
+            resultCont.innerHTML =   prediccion;
+        }else{
+            alert("model don't loaded")
+        }
+    }
+
+
+    var modelvr = null;
+    (async () => {
+          console.log("Cargando  modelvr...");
+          modelvr = await tf.loadLayersModel("assets/models/valid_resp/v1/Valid_response_modelV1.json");
+          console.log(" modelvr cargado...");
+      })();
+
+    function valid_resp(){
+        if(modelvr!=null){
+            let sample= document.getElementById("input").value
+            console.log("sample")
+        
+            var tensor = tf.tensor1d([parseInt(sample)]);
+            var prediccion = modelvr.predict(tensor).dataSync();
+            //prediccion = Math.round(prediccion, 1);
+            document.getElementById("resultado")
+
+            let resultCont= document.getElementById("result")
+
+            let respText = "NO"
+            if(prediccion>0.5){
+                let respText="SI"
+            }
+
+            resultCont.innerHTML =   "value: "+prediccion+" Respuesta Valida: ";
+
+        }else{
+            alert("modelvr don't loaded")
+        }
+    }
+
+
+// extra
+function checkInput(ob) {
+  var invalidChars = /[^0-9]|/gi
+  if(invalidChars.test(ob.value)) {
+            ob.value = ob.value.replace(invalidChars,"");
+      }
+}
+
+
+
+  
+
+  
+</script>
+</html>
